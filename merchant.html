@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mie Gacoan - Kitchen Order Display & Kasir</title>
+  <meta name="description"
+    content="Dashboard Dapur dan Kasir Mie Gacoan - Kelola antrean pesanan real-time, terima dan masak pesanan, pantau omset harian, dan atur ketersediaan stok menu.">
+  <link rel="stylesheet" href="style.css">
+  <link rel="icon"
+    href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220%22%3E%3Ctext y=%2226%22 font-size=%2226%22>👨‍🍳</text></svg>">
+</head>
+
+<body style="background-color: #0f172a; color: #f8fafc;">
+
+  <!-- ==========================================
+       MERCHANT / KITCHEN DEDICATED HEADER (PORT 4000)
+       ========================================== -->
+  <header class="main-header" style="background: rgba(15, 23, 42, 0.95); border-bottom-color: #334155;">
+    <div class="header-container">
+
+      <!-- Brand Logo -->
+      <a href="/" class="brand-logo" title="Dashboard Dapur Mie Gacoan">
+        <div class="logo-badge" style="background: linear-gradient(135deg, #ea580c 0%, #dc2626 100%);">👨‍🍳</div>
+        <div class="logo-text">
+          <h1
+            style="background: linear-gradient(135deg, #fb923c 0%, #f43f5e 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">
+            MIE GACOAN KITCHEN</h1>
+          <p style="color: #94a3b8;">Kitchen Display & Kasir Dashboard</p>
+        </div>
+      </a>
+
+      <!-- Header Merchant Actions -->
+      <div class="header-actions">
+        <!-- Live Kitchen Status Pill -->
+        <div class="active-order-pill"
+          style="background: #1e293b; color: #38bdf8; border-color: #0284c7; animation: none;">
+          <span style="font-size: 0.9rem;">🟢</span> <span>Server Online</span>
+        </div>
+
+        <!-- Refresh Button -->
+        <button type="button" class="btn-kitchen-action btn-process" id="refreshOrdersBtn"
+          style="flex: unset; padding: 0.45rem 1rem; border-radius: var(--radius-full); font-size: 0.82rem;">
+          🔄 Refresh
+        </button>
+
+        <!-- Sound Alert Toggle -->
+        <button type="button" class="btn-icon" id="soundToggleBtn" title="Aktifkan/Bisukan Suara Notifikasi Dapur"
+          style="background: #1e293b; border-color: #334155; color: white;">
+          <span id="soundIcon">🔔</span>
+        </button>
+      </div>
+
+    </div>
+  </header>
+
+  <!-- ==========================================
+       MAIN MERCHANT DASHBOARD CONTENT
+       ========================================== -->
+  <main class="view-container active-view" id="merchantView" style="padding-top: 2rem;">
+
+    <!-- Merchant Header & Summary Banner -->
+    <section class="merchant-view-header"
+      style="background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); border: 1px solid #334155;">
+      <div class="merchant-title">
+        <h2 style="color: #fff;">👨‍🍳 Kitchen Display & Order Management</h2>
+        <p style="color: #cbd5e1;">Pantau antrean pesanan real-time dari pelanggan, ubah status masakan, dan kelola
+          ketersediaan stok.</p>
+      </div>
+    </section>
+
+    <!-- KPI Metrics Cards -->
+    <section class="merchant-kpi-grid">
+      <div class="kpi-card" style="background: #1e293b; border-color: #334155;">
+        <div class="kpi-icon revenue" style="background: rgba(16, 185, 129, 0.15); color: #34d399;">💰</div>
+        <div class="kpi-data">
+          <h5 style="color: #94a3b8;">Total Omset Hari Ini</h5>
+          <h3 id="kpiRevenue" style="color: #fff;">Rp 0</h3>
+        </div>
+      </div>
+
+      <div class="kpi-card" style="background: #1e293b; border-color: #334155;">
+        <div class="kpi-icon orders" style="background: rgba(59, 130, 246, 0.15); color: #60a5fa;">📋</div>
+        <div class="kpi-data">
+          <h5 style="color: #94a3b8;">Total Pesanan Masuk</h5>
+          <h3 id="kpiTotalOrders" style="color: #fff;">0 Pesanan</h3>
+        </div>
+      </div>
+
+      <div class="kpi-card" style="background: #1e293b; border-color: #334155;">
+        <div class="kpi-icon kitchen" style="background: rgba(249, 115, 22, 0.15); color: #fb923c;">🍳</div>
+        <div class="kpi-data">
+          <h5 style="color: #94a3b8;">Sedang Dimasak di Dapur</h5>
+          <h3 id="kpiActiveKitchen" style="color: #fff;">0 Antrean</h3>
+        </div>
+      </div>
+
+      <div class="kpi-card" style="background: #1e293b; border-color: #334155;">
+        <div class="kpi-icon bestseller" style="background: rgba(236, 72, 153, 0.15); color: #f472b6;">🏆</div>
+        <div class="kpi-data">
+          <h5 style="color: #94a3b8;">Menu Paling Laris</h5>
+          <h3 id="kpiBestSeller" style="color: #fff;">-</h3>
+        </div>
+      </div>
+    </section>
+
+    <!-- Merchant Filter Tabs -->
+    <div class="merchant-tabs-bar" style="border-bottom-color: #334155;">
+      <div class="merchant-tab-group" id="merchantOrderFilterGroup">
+        <button type="button" class="merchant-filter-btn active" data-status="all" style="color: #94a3b8;">
+          Semua Pesanan <span class="filter-badge-count" id="countAllOrders"
+            style="background: #334155; color: #fff;">0</span>
+        </button>
+        <button type="button" class="merchant-filter-btn" data-status="Menunggu Konfirmasi" style="color: #94a3b8;">
+          ⏳ Baru Masuk <span class="filter-badge-count" id="countPendingOrders"
+            style="background: #334155; color: #fff;">0</span>
+        </button>
+        <button type="button" class="merchant-filter-btn" data-status="Sedang Dimasak" style="color: #94a3b8;">
+          🍳 Sedang Dimasak <span class="filter-badge-count" id="countCookingOrders"
+            style="background: #334155; color: #fff;">0</span>
+        </button>
+        <button type="button" class="merchant-filter-btn" data-status="Siap Disajikan" style="color: #94a3b8;">
+          🍜 Siap Saji <span class="filter-badge-count" id="countReadyOrders"
+            style="background: #334155; color: #fff;">0</span>
+        </button>
+        <button type="button" class="merchant-filter-btn" data-status="Selesai" style="color: #94a3b8;">
+          ✅ Selesai <span class="filter-badge-count" id="countDoneOrders"
+            style="background: #334155; color: #fff;">0</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Live Orders Kanban Grid -->
+    <section class="orders-grid" id="merchantOrdersGrid">
+      <!-- Order cards rendered dynamically -->
+    </section>
+
+    <!-- Merchant Menu Stock Management Section -->
+    <section class="merchant-section" style="background: #1e293b; border-color: #334155; color: #f8fafc;">
+      <div class="section-header-title">
+        <div>
+          <h3 style="font-size: 1.3rem; color: #fff;">📦 Manajemen Ketersediaan Stok Menu</h3>
+          <p style="font-size: 0.85rem; color: #94a3b8;">Ubah status ketersediaan menu secara langsung (Otomatis
+            langsung nonaktif di Pemesan)</p>
+        </div>
+      </div>
+
+      <div style="overflow-x: auto;">
+        <table class="stock-table" style="color: #f8fafc;">
+          <thead>
+            <tr style="background: #0f172a;">
+              <th style="color: #94a3b8; border-color: #334155;">Foto</th>
+              <th style="color: #94a3b8; border-color: #334155;">Nama Menu</th>
+              <th style="color: #94a3b8; border-color: #334155;">Kategori</th>
+              <th style="color: #94a3b8; border-color: #334155;">Harga</th>
+              <th style="color: #94a3b8; border-color: #334155;">Status Stok</th>
+              <th style="color: #94a3b8; border-color: #334155;">Aksi Ketersediaan</th>
+            </tr>
+          </thead>
+          <tbody id="merchantStockTableBody">
+            <!-- Stock rows rendered dynamically -->
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ==========================================
+       RECEIPT MODAL (STRUK KASIR)
+       ========================================== -->
+  <div class="modal-overlay" id="receiptModalOverlay">
+    <div class="modal-card" style="max-width: 380px;">
+      <div class="modal-header">
+        <h3 class="modal-title">Struk Pembayaran</h3>
+        <button type="button" class="btn-close-modal" id="closeReceiptModalBtn">✕</button>
+      </div>
+
+      <div class="modal-body" style="padding: 1rem;">
+        <div class="receipt-paper" id="printableReceiptArea">
+          <div class="receipt-header">
+            <h3>MIE GACOAN RESTO</h3>
+            <p>Cabang Resmi Online Order</p>
+            <p id="receiptDate">19/08/2026 21:00</p>
+          </div>
+
+          <div class="receipt-row">
+            <span>No. Order:</span>
+            <strong id="receiptOrderId">#GC-1001</strong>
+          </div>
+          <div class="receipt-row">
+            <span>Pemesan:</span>
+            <span id="receiptCustomerName">Pelanggan</span>
+          </div>
+          <div class="receipt-row">
+            <span>Tipe:</span>
+            <strong id="receiptOrderType">Dine In (Meja 05)</strong>
+          </div>
+          <div class="receipt-row">
+            <span>Pembayaran:</span>
+            <span id="receiptPaymentMethod">QRIS (Lunas)</span>
+          </div>
+
+          <div class="receipt-divider"></div>
+
+          <div id="receiptItemsList">
+            <!-- Items rendered by JS -->
+          </div>
+
+          <div class="receipt-divider"></div>
+
+          <div class="receipt-row">
+            <span>Subtotal:</span>
+            <span id="receiptSubtotal">Rp 0</span>
+          </div>
+          <div class="receipt-row">
+            <span>PPN Resto (10%):</span>
+            <span id="receiptTax">Rp 0</span>
+          </div>
+          <div class="receipt-row" style="font-weight: 900; font-size: 0.95rem; margin-top: 0.35rem;">
+            <span>TOTAL:</span>
+            <span id="receiptTotal">Rp 0</span>
+          </div>
+
+          <div class="receipt-footer">
+            <p>*** STRUK DAPUR & KASIR ***</p>
+            <p>Mie Gacoan Management System</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-footer" style="gap: 0.75rem;">
+        <button type="button" class="btn-kitchen-action btn-ready" id="printReceiptBtn" style="padding: 0.75rem;">
+          <span>🖨️ Cetak / Print Struk</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Scripts -->
+  <script src="data.js"></script>
+  <script src="merchant.js"></script>
+</body>
+
+</html>

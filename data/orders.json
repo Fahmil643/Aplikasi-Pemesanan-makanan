@@ -1,0 +1,35 @@
+﻿{
+    "total":  55000,
+    "id":  "GC-9081",
+    "createdAt":  "2026-08-19T21:54:18.8742206+07:00",
+    "orderType":  "Dine In",
+    "items":  [
+                  {
+                      "price":  11000,
+                      "notes":  "Pangsit dipisah",
+                      "name":  "Mie Gacoan",
+                      "level":  4,
+                      "qty":  2
+                  },
+                  {
+                      "price":  10000,
+                      "notes":  "",
+                      "name":  "Udang Keju (3 pcs)",
+                      "level":  null,
+                      "qty":  1
+                  },
+                  {
+                      "price":  9000,
+                      "notes":  "Manis sedang",
+                      "name":  "Es Gobak Sodor",
+                      "level":  null,
+                      "qty":  2
+                  }
+              ],
+    "subtotal":  50000,
+    "customerName":  "Budi Santoso",
+    "tax":  5000,
+    "status":  "Sedang Dimasak",
+    "tableNumber":  "Meja 02",
+    "paymentMethod":  "QRIS"
+}
